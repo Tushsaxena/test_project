@@ -1,5 +1,6 @@
 require "selenium-webdriver"
 require "rspec"
+require 'webdrivers'  # ensures correct ChromeDriver
 
 RSpec.describe "Testing framework" do
 
