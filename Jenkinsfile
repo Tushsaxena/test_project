@@ -11,16 +11,16 @@ pipeline {
 
         stage('Setup Ruby Environment') {
             steps {
-                // Install bundler and dependencies
-                sh 'gem install bundler'
-                sh 'bundle install'
+                // Install bundler and dependencies on Windows
+                bat 'gem install bundler'
+                bat 'bundle install'
             }
         }
 
         stage('Run Tests') {
             steps {
-                // Run RSpec tests (change path if needed)
-                sh 'rspec spec/'
+                // Run RSpec tests (adjust path if needed)
+                bat 'rspec spec\\'
             }
         }
     }
