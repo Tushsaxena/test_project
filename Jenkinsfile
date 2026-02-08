@@ -20,7 +20,7 @@ pipeline {
         stage('Run Tests') {
             steps {
                 // Run RSpec tests (adjust path if needed)
-                bat 'rspec spec'
+                bat 'rspec test_project/rspec/spec/'
             }
         }
     }
