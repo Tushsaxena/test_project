@@ -87,6 +87,20 @@ RSpec.describe "Testing framework" do
       expect(content_output["Email"]).to eq("testqa98@gmail.com")
     end
 
+    it 'Select all the checkboxes by clicking on home checkupbox' do
+      @driver.find_element(xpath:"//span[text()='Check Box']").click
+
+      checkbox=@driver.find_element(css:"label[for='tree-node-home'] [class='rct-checkbox']")
+      checkbox.click
+      sleep 2
+
+      content= @driver.find_element(id:"result").text
+      content=content.split("\n")
+      puts"-----content is:  #{content}"
+
+      expect(content).to eq(["You have selected :", "home", "desktop", "notes", "commands", "documents", "workspace", "react", "angular", "veu", "office", "public", "private", "classified", "general", "downloads", "wordFile", "excelFile"])
+    end
+
   end
 
 end
