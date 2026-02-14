@@ -87,7 +87,56 @@ RSpec.describe "Testing framework" do
       expect(content_output["Email"]).to eq("testqa98@gmail.com")
     end
 
+    it 'Validate side arrow is working and fetch all names' do
+      #Learning for siblings: //span[text()='Desktop']/preceding-sibling::span[@class='rct-checkbox']  ,  //span[text()='Desktop']/parent::label/preceding-sibling::button
+      @driver.find_element(xpath:"//span[text()='Check Box']").click
+      #ClickInterceptederror
+      element=@driver.find_element(xpath:"//button[contains(@class,'rct-collapse-btn')]")
+      @driver.execute_script("arguments[0].click();", element)
+      sleep 2
+      #its css: li.rct-node-expanded
+      list=@driver.find_element(xpath:"//li[contains(@class, 'rct-node-expanded')]")
+      list=list.text.split("\n")
+      puts "list------------#{list}"
+      expect(list).to eq(["Home", "Desktop", "Documents", "Downloads"])
+    end
+
+    it 'Fetch all details from all the checkup box without selecting it' do
+      @driver.navigate.refresh
+
+      #Now open all the checkboxes with arrow and fetch data for all the names
+      # When there is space issue, we use normalze-space://span[normalize-space()='Home']/parent::label/preceding-sibling::button
+      home=@driver.find_element(xpath:"//span[normalize-space()='Home']/parent::label/preceding-sibling::button")
+      @driver.execute_script("arguments[0].click();", home)
+
+      desktop=@driver.find_element(xpath:"//span[normalize-space()='Desktop']/parent::label/preceding-sibling::button")
+      desktop.click
+
+      documents=@driver.find_element(xpath:"//span[normalize-space()='Documents']/parent::label/preceding-sibling::button")
+      documents.click
+
+      workspace=@driver.find_element(xpath:"//span[normalize-space()='WorkSpace']/parent::label/preceding-sibling::button")
+      @driver.execute_script("arguments[0].click();",workspace)
+
+      office=@driver.find_element(xpath:"//span[normalize-space()='Office']/parent::label/preceding-sibling::button")
+      #@driver.execute_script("arguments[0].click();",office)
+      @driver.execute_script(
+        "arguments[0].scrollIntoView({block: 'center'});",
+        office
+      )
+      office.click
+
+      downloads=@driver.find_element(xpath:"//span[normalize-space()='Downloads']/parent::label/preceding-sibling::button")
+      @driver.execute_script("arguments[0].click();",downloads)
+
+      all_content=@driver.find_element(id:"tree-node")
+      all_content=all_content.text.split("\n")
+      puts"---all_content----#{all_content}"
+      expect(all_content).to eq(["Home", "Desktop", "Notes", "Commands", "Documents", "WorkSpace", "React", "Angular", "Veu", "Office", "Public", "Private", "Classified", "General", "Downloads", "Word File.doc", "Excel File.doc"])
+    end
+
     it 'Select all the checkboxes by clicking on home checkupbox' do
+      @driver.navigate.refresh
       @driver.find_element(xpath:"//span[text()='Check Box']").click
 
       checkbox=@driver.find_element(css:"label[for='tree-node-home'] [class='rct-checkbox']")
