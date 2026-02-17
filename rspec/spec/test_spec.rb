@@ -6,7 +6,18 @@ RSpec.describe "Testing framework" do
 
   before(:all) do
     @driver = Selenium::WebDriver.for :chrome
+    @driver.manage.window.maximize
 
+    #driver.manage.timeouts.implicit_wait = 10
+    # This is implicit wait by using this we can wait for each element using find_element for 10 seconds
+    # However not preffered because it may slows down, thats why some of the cases we use explicit wait
+    # wait = Selenium::WebDriver::Wait.new(timeout: 10)
+    #
+    # element = wait.until do
+    #   el = driver.find_element(id: "username")
+    #   el if el.displayed?
+    # end
+    # In this case we are waiting for specific condition before continuing
   end
 
   after(:all)do
@@ -17,24 +28,18 @@ RSpec.describe "Testing framework" do
 
     it "Open demo qa" do
       @driver.navigate.to "https://demoqa.com/"
-
       wait = Selenium::WebDriver::Wait.new(timeout: 10)
 
-      element = wait.until {
-        @driver.find_element(xpath: "//h5[text()='Elements']")
-      }
+      element = wait.until do
+        el = @driver.find_element(xpath: "//h5[normalize-space()='Elements']")
+        el if el.displayed?
+      end
 
-      # SCROLL FIRST
-      @driver.execute_script(
-        "arguments[0].scrollIntoView({block: 'center'});",
-        element
-      )
+      # Scroll directly to element
+      @driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", element)
 
-      # NOW check visibility
-      puts element.displayed? ? "Element is visible" : "Element is NOT visible"
-
-      # WAIT until clickable (important)
-      wait.until { element.displayed? && element.enabled? }
+      # Small wait for layout stabilization
+      sleep 0.5
 
       element.click
 
@@ -42,6 +47,7 @@ RSpec.describe "Testing framework" do
     end
 
     it 'Fetch content of table' do
+      @driver.execute_script("window.scrollTo(0, 0);")
       element = @driver.find_element(xpath: "//*[@class='left-pannel']")
       puts element.displayed? ? "Element is visible" : "Element is NOT visible"
 
@@ -57,6 +63,7 @@ RSpec.describe "Testing framework" do
     end
 
     it 'Fill the details' do
+      @driver.execute_script("window.scrollTo(0, 0);")
       button = @driver.find_element(xpath: "//span[text()='Text Box']")
       button.click
 
@@ -71,7 +78,9 @@ RSpec.describe "Testing framework" do
       @driver.execute_script(
         "arguments[0].scrollIntoView({block: 'center'});", submit)
 
+      sleep 0.3
       submit.click
+
       puts"-----------------------------"
       content_output=@driver.find_element(id: "output")
       content_output= content_output.text
@@ -88,37 +97,40 @@ RSpec.describe "Testing framework" do
     end
 
     it 'Validate side arrow is working and fetch all names' do
+      @driver.execute_script("window.scrollTo(0, 0);")
       #Learning for siblings: //span[text()='Desktop']/preceding-sibling::span[@class='rct-checkbox']  ,  //span[text()='Desktop']/parent::label/preceding-sibling::button
       @driver.find_element(xpath:"//span[text()='Check Box']").click
+      sleep 2
       #ClickInterceptederror
-      element=@driver.find_element(xpath:"//button[contains(@class,'rct-collapse-btn')]")
-      @driver.execute_script("arguments[0].click();", element)
+      element=@driver.find_element(xpath:"//span[@title='Home']/preceding-sibling::span[contains(@class, 'tree-switche')]")
+      #@driver.execute_script("arguments[0].click();", element)
+      element.click
       sleep 2
       #its css: li.rct-node-expanded
-      list=@driver.find_element(xpath:"//li[contains(@class, 'rct-node-expanded')]")
+      list=@driver.find_element(xpath:"//div[@class='rc-tree-list']")
       list=list.text.split("\n")
       puts "list------------#{list}"
       expect(list).to eq(["Home", "Desktop", "Documents", "Downloads"])
     end
 
     it 'Fetch all details from all the checkup box without selecting it' do
-      @driver.navigate.refresh
+      #@driver.navigate.refresh
 
       #Now open all the checkboxes with arrow and fetch data for all the names
       # When there is space issue, we use normalze-space://span[normalize-space()='Home']/parent::label/preceding-sibling::button
-      home=@driver.find_element(xpath:"//span[normalize-space()='Home']/parent::label/preceding-sibling::button")
-      @driver.execute_script("arguments[0].click();", home)
+      # home=@driver.find_element(xpath:"//span[@title='Home']/preceding-sibling::span[contains(@class, 'tree-switche')]")
+      # @driver.execute_script("arguments[0].click();", home)
 
-      desktop=@driver.find_element(xpath:"//span[normalize-space()='Desktop']/parent::label/preceding-sibling::button")
+      desktop=@driver.find_element(xpath:"//span[@title='Desktop']/preceding-sibling::span[contains(@class, 'tree-switche')]")
       desktop.click
 
-      documents=@driver.find_element(xpath:"//span[normalize-space()='Documents']/parent::label/preceding-sibling::button")
+      documents=@driver.find_element(xpath:"//span[@title='Documents']/preceding-sibling::span[contains(@class, 'tree-switche')]")
       documents.click
 
-      workspace=@driver.find_element(xpath:"//span[normalize-space()='WorkSpace']/parent::label/preceding-sibling::button")
+      workspace=@driver.find_element(xpath:"//span[@title='WorkSpace']/preceding-sibling::span[contains(@class, 'tree-switche')]")
       @driver.execute_script("arguments[0].click();",workspace)
 
-      office=@driver.find_element(xpath:"//span[normalize-space()='Office']/parent::label/preceding-sibling::button")
+      office=@driver.find_element(xpath:"//span[@title='Office']/preceding-sibling::span[contains(@class, 'tree-switche')]")
       #@driver.execute_script("arguments[0].click();",office)
       @driver.execute_script(
         "arguments[0].scrollIntoView({block: 'center'});",
@@ -126,20 +138,20 @@ RSpec.describe "Testing framework" do
       )
       office.click
 
-      downloads=@driver.find_element(xpath:"//span[normalize-space()='Downloads']/parent::label/preceding-sibling::button")
+      downloads=@driver.find_element(xpath:"//span[@title='Downloads']/preceding-sibling::span[contains(@class, 'tree-switche')]")
       @driver.execute_script("arguments[0].click();",downloads)
 
-      all_content=@driver.find_element(id:"tree-node")
+      all_content=@driver.find_element(xpath:"//div[@class='rc-tree-list']")
       all_content=all_content.text.split("\n")
       puts"---all_content----#{all_content}"
       expect(all_content).to eq(["Home", "Desktop", "Notes", "Commands", "Documents", "WorkSpace", "React", "Angular", "Veu", "Office", "Public", "Private", "Classified", "General", "Downloads", "Word File.doc", "Excel File.doc"])
     end
 
     it 'Select all the checkboxes by clicking on home checkupbox' do
-      @driver.navigate.refresh
+      @driver.execute_script("window.scrollTo(0, 0);")
       @driver.find_element(xpath:"//span[text()='Check Box']").click
 
-      checkbox=@driver.find_element(css:"label[for='tree-node-home'] [class='rct-checkbox']")
+      checkbox=@driver.find_element(xpath:"//span[text()='Home']/ancestor::div[@role='treeitem']//span[@role='checkbox']")
       checkbox.click
       sleep 2
 
@@ -147,9 +159,77 @@ RSpec.describe "Testing framework" do
       content=content.split("\n")
       puts"-----content is:  #{content}"
 
-      expect(content).to eq(["You have selected :", "home", "desktop", "notes", "commands", "documents", "workspace", "react", "angular", "veu", "office", "public", "private", "classified", "general", "downloads", "wordFile", "excelFile"])
+      expect(content).to eq(["You have selected :", "home", "desktop", "documents", "downloads", "notes", "commands", "workspace", "office", "wordFile", "excelFile", "react", "angular", "veu", "public", "private", "classified", "general"])
     end
 
+    it 'Click on checkboxes and verify the results' do
+      @driver.find_element(css:"[aria-label='Select Notes']").click
+      veu=@driver.find_element(css:"[aria-label='Select Veu']")
+      @driver.execute_script("arguments[0].scrollIntoView({block: 'center'});",veu)
+      sleep 0.5
+      veu.click
+      private=@driver.find_element(css:"[aria-label='Select Private']")
+      @driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", private)
+      sleep 0.5
+      private.click
+      excel=@driver.find_element(css:"[aria-label='Select Excel File.doc']")
+      @driver.execute_script(
+        "arguments[0].scrollIntoView({block: 'center'});",
+        excel
+   )
+      sleep 0.5
+      excel.click
+
+      result=@driver.find_element(id:'result').text
+      result=result.split("\n")
+      puts"---result-----#{result}"
+      expect(result).to eq(["You have selected :", "commands", "wordFile", "react", "angular", "public", "classified", "general"])
+    end
+
+  end
+
+  context 'Radio button' do
+    it 'Validate that User is able to navigate to radio  button and fetch names of them' do
+      @driver.find_element(xpath:"//span[text()='Radio Button']").click
+      page_name=@driver.find_element(xpath:"//h1[@class='text-center']").text
+      puts"---page_name----#{page_name}"
+      expect(page_name).to eq("Radio Button")
+      fields=@driver.find_element(xpath:"//div[text()='Do you like the site?']/parent::div").text
+      fields=fields.split("\n")
+      puts"--fields is:  #{fields}"
+      expect(fields).to eq(["Do you like the site?", "Yes", "Impressive", "No"])
+    end
+
+    it 'Validate visibility of the buttons' do
+      yes_button=@driver.find_element(id:"yesRadio")
+      impressive_button=@driver.find_element(id:"impressiveRadio")
+      no_button=@driver.find_element(id:"noRadio")
+
+      aggregate_failures do
+      expect(impressive_button.displayed?).to eq true
+      expect(yes_button.displayed?).to eq true
+      expect(no_button.displayed?).to eq true
+      expect(impressive_button.enabled?).to eq true
+      expect(yes_button.enabled?).to eq true
+      expect(no_button.enabled?).to eq false
+      end
+    end
+
+    it 'Validate that after clicking on radio button correct output is visible'do
+      @driver.execute_script("window.scrollTo(0, 0);")
+      yes_button=@driver.find_element(id:"yesRadio")
+      yes_button.click
+      result= @driver.find_element(xpath:"//span[@class='text-success']/parent::p").text
+      puts"---result----#{result}"
+      expect(result).to eq("You have selected Yes")
+
+      impressive_button=@driver.find_element(id:"impressiveRadio")
+      impressive_button.click
+
+      result2=@driver.find_element(xpath:"//span[@class='text-success']/parent::p").text
+      puts"---result----#{result2}"
+      expect(result2).to eq("You have selected Impressive")
+    end
   end
 
 end
