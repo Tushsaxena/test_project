@@ -232,4 +232,18 @@ RSpec.describe "Testing framework" do
     end
   end
 
+  context 'Web tables' do
+    it 'Validate that user is able to navigate to web tables and verify fields on page' do
+      @driver.find_element(xpath: "//span[text()='Web Tables']").click
+
+      web_text=@driver.find_element(xpath: "//h1[@class='text-center' and text()='Web Tables']").text
+      expect(web_text).to eq('Web Tables')
+      add_button=@driver.find_element(id: "addNewRecordButton")
+      role_group=@driver.find_element(css: "[role='group']")
+      expect(add_button).to be_displayed
+      expect(add_button).to be_enabled
+      #expect(add_button).to be_displayed.and be_enabled   More cleaner
+      expect(role_group).to be_displayed
+    end
+  end
 end
