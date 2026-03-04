@@ -245,5 +245,53 @@ RSpec.describe "Testing framework" do
       #expect(add_button).to be_displayed.and be_enabled   More cleaner
       expect(role_group).to be_displayed
     end
+
+    it 'Validate that table details are present and fetch all the details' do
+      table=@driver.find_element(xpath:"//table[contains(@class,table-hover)]")
+      expect(table).to be_displayed
+
+      table_content=table.text
+
+      updated=table_content.split("\n")
+      value=["First Name", "Last Name", "Age", "Email", "Salary", "Department"]
+      arr=[]
+      for i in 1..updated.length-1
+        keys=Hash[value.zip(updated[i].split(" "))]
+        arr<<keys
+      end
+
+      expect(arr[0]).to eq({"First Name"=>"Cierra", "Last Name"=>"Vega", "Age"=>"39", "Email"=>"cierra@example.com", "Salary"=>"10000", "Department"=>"Insurance"})
+      expect(arr[1]).to eq({"First Name"=>"Alden", "Last Name"=>"Cantrell", "Age"=>"45", "Email"=>"alden@example.com", "Salary"=>"12000", "Department"=>"Compliance"})
+      expect(arr[2]).to eq({"First Name"=>"Kierra", "Last Name"=>"Gentry", "Age"=>"29", "Email"=>"kierra@example.com", "Salary"=>"2000", "Department"=>"Legal"})
+
+    end
+
+    it 'Verifying results using find elements' do
+      table=@driver.find_elements(xpath:"//table[contains(@class,table-hover)]")
+      #As find elements provide array, so we can iterate through it
+      table.each do |tr|
+        p tr.text
+        #Just for testing purpose
+      end
+
+
+      #find elements with multiple elements
+      table=@driver.find_elements(xpath:"//table[contains(@class,table-hover)]//tr")
+
+      table.map! { |el| el.text }
+
+      p table
+
+      headers=["First Name", "Last Name", "Age", "Email", "Salary", "Department"]
+
+      arr=[]
+      for i in 1..table.length-1
+        ok=Hash[headers.zip(table[i].split(" "))]
+        arr<<ok
+      end
+      expect(arr[0]).to eq({"First Name"=>"Cierra", "Last Name"=>"Vega", "Age"=>"39", "Email"=>"cierra@example.com", "Salary"=>"10000", "Department"=>"Insurance"})
+      expect(arr[1]).to eq({"First Name"=>"Alden", "Last Name"=>"Cantrell", "Age"=>"45", "Email"=>"alden@example.com", "Salary"=>"12000", "Department"=>"Compliance"})
+      expect(arr[2]).to eq({"First Name"=>"Kierra", "Last Name"=>"Gentry", "Age"=>"29", "Email"=>"kierra@example.com", "Salary"=>"2000", "Department"=>"Legal"})
+    end
   end
 end
