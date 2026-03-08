@@ -1,12 +1,14 @@
 require "selenium-webdriver"
 require "rspec"
-require 'webdrivers'  # ensures correct ChromeDriver
+require 'webdrivers' # ensures correct ChromeDriver
+require_relative '../lib/page_files/elements'
 
 RSpec.describe "Testing framework" do
 
   before(:all) do
     @driver = Selenium::WebDriver.for :chrome
     @driver.manage.window.maximize
+    @element_page=ElementsPage.new(@driver)
 
     #driver.manage.timeouts.implicit_wait = 10
     # This is implicit wait by using this we can wait for each element using find_element for 10 seconds
@@ -292,6 +294,33 @@ RSpec.describe "Testing framework" do
       expect(arr[0]).to eq({"First Name"=>"Cierra", "Last Name"=>"Vega", "Age"=>"39", "Email"=>"cierra@example.com", "Salary"=>"10000", "Department"=>"Insurance"})
       expect(arr[1]).to eq({"First Name"=>"Alden", "Last Name"=>"Cantrell", "Age"=>"45", "Email"=>"alden@example.com", "Salary"=>"12000", "Department"=>"Compliance"})
       expect(arr[2]).to eq({"First Name"=>"Kierra", "Last Name"=>"Gentry", "Age"=>"29", "Email"=>"kierra@example.com", "Salary"=>"2000", "Department"=>"Legal"})
+    end
+
+    it 'Validate that user is able to verify placeholder and insert value' do
+      add=@driver.find_element(id:"addNewRecordButton")
+      add.click
+
+      email_fill=@driver.find_element(id:"userEmail")
+      test=email_fill.attribute("placeholder")
+      puts"---test----#{test}"
+      expect(test).to eq("name@example.com")
+
+      first_name_fill=@driver.find_element(id:"firstName")
+      first_name_fill.send_keys("Anand@gmaiil.com")
+
+      @driver.find_element(xpath:"//button[contains(@class,'close')]").click
+    end
+  end
+
+  context'Now testing with POM structure' do
+    it 'Validate that admin is able to add new user' do
+      @element_page.add_person("Tushar","Saxena","testqa99@gmail.com",24,25000,"IT")
+      values=@element_page.fetch_form_data
+      fetch_user=@element_page.fetch_data_with_name(values,"Tushar")
+
+      expect(fetch_user).to eq({"First Name"=>"Tushar", "Last Name"=>"Saxena", "Age"=>"24", "Email"=>"testqa99@gmail.com", "Salary"=>"25000", "Department"=>"IT"})
+      expect(fetch_user["First Name"]).to eq "Tushar"
+
     end
   end
 end
