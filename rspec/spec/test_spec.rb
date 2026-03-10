@@ -323,4 +323,44 @@ RSpec.describe "Testing framework" do
 
     end
   end
+
+  context 'Testing clicks: single click, doouble click and right click'do
+    it 'Test every click in this test case'do
+      @driver.find_element(xpath:"//span[text()='Buttons']").click
+      double_click=@driver.find_element(id:"doubleClickBtn")
+      @driver.action.double_click(double_click).perform
+      double_click_message=@driver.find_element(id:"doubleClickMessage").text
+      puts"----doubleclickmessage----#{double_click_message}"
+      expect(double_click_message).to eq("You have done a double click")
+
+      right_click=@driver.find_element(id:"rightClickBtn")
+      @driver.action.context_click(right_click).perform
+
+      right_click_message=@driver.find_element(id:"rightClickMessage").text
+      expect(right_click_message).to eq("You have done a right click")
+
+      @driver.find_element(xpath:"//button[text()='Click Me']").click
+
+      left_click_message=@driver.find_element(id:"dynamicClickMessage").text
+      expect(left_click_message).to eq("You have done a dynamic click")
+
+    end
+  end
+
+  context 'Testing muliple windows and links' do
+    it 'Validate the count of window handles' do
+      @driver.find_element(xpath:"//span[text()='Links']").click
+      #Verify that we are on the page:
+
+      text_link=@driver.find_element(xpath:"//h1[@class='text-center']").text
+      expect(text_link).to eq("Links")
+
+      count_handles=@driver.window_handles
+      puts"---count_handles----#{count_handles}"
+      puts"---count_handles----#{count_handles.size}"
+
+      expect(count_handles.size).to eq(1)
+
+    end
+  end
 end
