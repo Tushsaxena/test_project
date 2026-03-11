@@ -362,5 +362,34 @@ RSpec.describe "Testing framework" do
       expect(count_handles.size).to eq(1)
 
     end
+
+    it 'Validate that user is able to switch to another tab' do
+      #window handle: save current tab-> window_handles->all tabs-> switch_to.window(tabs[1])
+
+      current_window=@driver.window_handle
+
+      puts"---currentwindow----#{current_window}-------size-----#{current_window.size}"
+
+      @driver.find_element(id:"simpleLink").click
+
+      all_handles=@driver.window_handles
+      puts"---all_handles--#{all_handles}-SIZE-#{all_handles.size}"
+
+      @driver.switch_to.window(all_handles[1])
+      wait = Selenium::WebDriver::Wait.new(timeout: 10)
+
+      element = wait.until do
+        el = @driver.find_element(xpath: "//img[@class='banner-image']")
+        el if el.displayed?
+      end
+      puts element.displayed? ? "Element is visible" : "Element is NOT visible"
+
+      #Both way works
+      #@driver.switch_to.window(current_window)
+      @driver.switch_to.window(all_handles[0])
+
+      text_link=@driver.find_element(xpath:"//h1[@class='text-center']").text
+      expect(text_link).to eq("Links")
+    end
   end
 end
