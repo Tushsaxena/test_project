@@ -349,7 +349,13 @@ RSpec.describe "Testing framework" do
 
   context 'Testing muliple windows and links' do
     it 'Validate the count of window handles' do
-      @driver.find_element(xpath:"//span[text()='Links']").click
+      wait=Selenium::WebDriver::Wait.new(timeout:10)
+      element=wait.until do
+        @driver.find_element(xpath:"//span[text()='Links']")
+      end
+      @driver.execute_script("arguments[0].scrollIntoView(true);", element)
+      element.click
+
       #Verify that we are on the page:
 
       text_link=@driver.find_element(xpath:"//h1[@class='text-center']").text
@@ -390,6 +396,18 @@ RSpec.describe "Testing framework" do
 
       text_link=@driver.find_element(xpath:"//h1[@class='text-center']").text
       expect(text_link).to eq("Links")
+
+      @driver.switch_to.window(all_handles[1])
+      @driver.close
+
+      #Selenium cant explicitely move to page one if second close, it gives error: noSuchWindowError. We have to switch first
+      @driver.switch_to.window(all_handles[0])
+
+      text_link=@driver.find_element(xpath:"//h1[@class='text-center']").text
+      expect(text_link).to eq("Links")
+
+      window_count=@driver.window_handles
+      expect(window_count.size).to eq(1)
     end
   end
 end
