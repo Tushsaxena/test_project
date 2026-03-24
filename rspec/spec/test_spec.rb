@@ -410,4 +410,57 @@ RSpec.describe "Testing framework" do
       expect(window_count.size).to eq(1)
     end
   end
+
+  context 'Validate for clicking link' do
+    it 'Validate by clicking 2nd link with using find element' do
+      @driver.find_element(xpath:"(//p//a)[2]").click
+      handles_count=@driver.window_handles
+      @driver.switch_to.window(handles_count[1])
+
+      wait=Selenium::WebDriver::Wait.new(timeout:10)
+      element = wait.until do
+        el = @driver.find_element(xpath: "//a[contains(@href,'demoqa.com')]")
+        el if el.displayed?
+      end
+
+      expect(element.displayed?).to eq(true)
+
+      @driver.close
+      @driver.switch_to.window(handles_count[0])
+
+      text_link=@driver.find_element(xpath:"//h1[@class='text-center']").text
+      expect(text_link).to eq("Links")
+
+      window_count=@driver.window_handles
+      expect(window_count.size).to eq(1)
+
+    end
+
+    it 'Validate by clicking 2nd link with using find elements' do
+      links=@driver.find_elements(xpath:"(//p//a)")
+      links[1].click
+
+      window_count=@driver.window_handles
+      expect(window_count.size).to eq 2
+
+      @driver.switch_to.window(window_count[1])
+
+      wait=Selenium::WebDriver::Wait.new(timeout:10)
+      element = wait.until do
+        el = @driver.find_element(xpath: "//a[contains(@href,'demoqa.com')]")
+        el if el.displayed?
+      end
+
+      expect(element.displayed?).to eq(true)
+
+      @driver.close
+      @driver.switch_to.window(window_count[0])
+
+      text_link=@driver.find_element(xpath:"//h1[@class='text-center']").text
+      expect(text_link).to eq("Links")
+
+      window_count=@driver.window_handles
+      expect(window_count.size).to eq(1)
+    end
+  end
 end
